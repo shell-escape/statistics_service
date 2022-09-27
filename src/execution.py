@@ -38,9 +38,7 @@ class DayStat(BaseModel):
         service.update_stat(session, self.date, update_args)
 
     @validator("clicks", "views", "cost")
-    def nonnegative(  # pylint: disable=E0213
-        cls, v: Optional[Union[int, float]]
-    ) -> Optional[str]:
+    def nonnegative(cls, v: Optional[Union[int, float]]) -> Optional[str]:
         """Non-negative validator"""
         if v < 0:
             raise ValueError("Should be positive")

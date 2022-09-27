@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class StatOut(BaseModel):
-    """"""
+    """Pydantic model for Statistic representation."""
 
     date: datetime.date
     clicks: int
