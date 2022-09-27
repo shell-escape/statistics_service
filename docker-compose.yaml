@@ -1,0 +1,52 @@
+networks:
+  ciplay-statistic_service:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - ./pg-init-scripts:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ciplay-statistic_service
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=statistic
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: on-failure
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 250
+    ports:
+      - "5050:80"
+
+  statistic_service:
+    build:
+      context: .
+      target: build
+    env_file:
+      - .env
+    environment:
+      - DB_URI=postgresql+psycopg2://postgres:postgres@db:5432/statistic
+    networks:
+      - ciplay-statistic_service
+    volumes:
+      - .:/usr/statistic_service
+    ports:
+      - "8001:8001"
+    command: bash -c "alembic upgrade head && uvicorn src.app:app --host 0.0.0.0 --port 8001 --reload"
+    depends_on:
+      - db
+    restart: on-failure
+
+volumes:
+  pgdata:
